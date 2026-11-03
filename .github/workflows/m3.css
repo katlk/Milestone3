@@ -1,0 +1,19 @@
+h1 {
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+}
+
+h2 {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    color: green;
+}
+
+p {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+header {
+    background-color: beige;
+}
+
+  .pagination a { margin: 0 4px; padding: 4px 8px; text-decoration: none; }
+  .pagination a.active { font-weight: bold; background: #333; color: #fff; }
