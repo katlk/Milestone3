@@ -30,7 +30,7 @@
 
         <div class="panel">
             <h2>Book Details</h2>
-            <div id="details">
+            <div id="bookdetails">
                 <p>Choose book for details.</p>
                 <p id="book-info" role="status"></p>
                 <div id="book-description"></div>
@@ -59,7 +59,8 @@
                     if (query) {
                         searchBooks(query);
                     }
-                })
+                });
+            });
 
 
             document.getElementById('search-btn').addEventListener('click', performSearch);
@@ -73,29 +74,29 @@
 
             function searchBooks(query, page) {
                 user_query = query;
+                const thisSearch = ++searchCount;
+                const url = `${SEARCH_BASE}?q=${encodeURIComponent(query)}&limit=10&fields=${FIELDS}`;
 
-                $.getJSON("https://openlibrary.org/search.json", {
-                    q: query,
-                    limit: pageSize,
-                    page: page
-                })
-                .done(function (data) {
-                    searchResult(data.docs);
-                    buildPagination(data.numFound, page);
+                $.getJSON(url)
+                    .done(function (data) {
 
-                    if (data.numFound === 0) {
-                        $("#searchResult").text("No results for \"" + query + "\".");
-                    } else {
-                        var total = Math.min(data.numFound, maxResults);
-                        $("#searchResult").text("Page" + page + " (up to) " + total + " results)");
-                    }
-                })
-                .fail(function () {
-                    $("#searchResult").text("Please try again...");
-                    $("#results").empty();
-                    $("#pagination").empty();
-                });
+                        if (thisSearch !== searchCount) return;
 
+                        if (data.docs.length === 0) {
+                            $("#searchResult").text("No results for \"" + query + "\".");
+                            return;
+                        } 
+                        $('#status').text(`Showing ${data.docs.length} results for "${query}"`);
+                        displayBooks(data.docs);
+                            //var total = Math.min(data.docs.length, maxResults);
+                            //$("#searchResult").text("Page" + page + " (up to) " + total + " results)");
+                        })
+                        .fail(function () {
+                            if (thisSearch !== searchCount) return;
+                            $('#status').text('Search failed. Please try again.');
+                        });
+                }
+ 
             function showResults(docs) {
                 $("#results").empty();
                 $.each(docs, function (i, book) {
@@ -103,8 +104,23 @@
                     var li = $("<li>").addClass("item").attr("data-key", book.key);
                     li.text(book.title + " by " + author);
                     $("#results").append(li);
+
                 });
             }
+
+            //displayBooks function added after due date
+
+            function displayBooks(docs) {
+                const $results = $('#results').empty();
+
+                $.each(docs, function (i, book) {
+                $results.append(buildBookCard(book));
+                
+            });
+
+
+
+        }
                 
             function buildPagination(numFound, currentPage) {
                 var totalPages = Math.min(maxPages, Math.ceil(numFound / pageSize));
@@ -127,7 +143,7 @@
 
             //Creating book cards
 
-            function buildBookCard(book) {
+                function buildBookCard(book) {
                     const workId = book.key.replace('/works/', '');
                     const year = book.first_publish_year || 'Year unavailable';
                     const bookUrl = 'https://openlibrary.org' + book.key;
@@ -167,6 +183,22 @@
                     return $card;
                     }
 
+
+                $(document).on("click", "#dynamicButton", function selectedBooks(docs) {
+                    $("#details").click(function() {
+                        const $details = $('#details').empty();
+
+                        $.each(docs, function (i, book) {
+                        $details.append(buildBookCard(book));
+                    });
+
+                    });
+
+                }
+     
+                );
+                
+
                 function loadDescription(workKey, $target) {
                     $.getJSON('https://openlibrary.org' + workKey + '.json')
                     .done(function (work) {
@@ -182,9 +214,6 @@
                         $target.text('Description unavailable');
                     });
                 }
-
-            };
-        }
 
     
         </script>
